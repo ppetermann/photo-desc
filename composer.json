@@ -1,5 +1,5 @@
 {
-    "name": "ppetermann/photo-desc",
+    "name": "devedge/photo-desc",
     "description": "A PHP script that reads photos from an input folder and uses OpenRouter to classify them",
     "type": "library",
     "license": "MIT",

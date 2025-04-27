@@ -69,7 +69,7 @@ This project can also be used as a composer package in other PHP applications. T
 ### Installation
 
 ```bash
-composer require ppetermann/photo-desc
+composer require devedge/photo-desc
 ```
 
 ### Usage in Your Project
