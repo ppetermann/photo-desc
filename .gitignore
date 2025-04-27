@@ -1,0 +1,53 @@
+# Project-specific directories
+/input_photos/
+/output/
+
+# Environment-specific files (contain API keys)
+.env
+
+# Composer dependencies and files
+/vendor/
+composer.lock
+
+# Local development-specific files
+.php-cs-fixer.cache
+.phpunit.result.cache
+
+# Cache and logs
+/logs/
+/cache/
+
+# IDEs and editors
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+.komodotools/
+/.phpstorm.meta.php
+/_ide_helper.php
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Temporary and backup files
+*.tmp
+*.swp
+*.swo
+*.bak
+*~
+*.backup
+
+# PHPUnit
+/phpunit.xml
+
+# Build and deploy artifacts
+/build/
+/dist/

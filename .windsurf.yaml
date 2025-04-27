@@ -1,0 +1,31 @@
+# Windsurf Rules File for Photo Description Generator
+description:
+  - "Photo Description Generator"
+  - "This script reads photos from an input folder, uses OpenRouter to classify them, and saves the tags and descriptions to JSON metadata files."
+  - "Using php king23/di for dependency injection."
+
+# Default ignores
+ignore:
+  - ".git"
+  - "vendor"
+  - "node_modules"
+  - "input_photos"
+  - "output"
+  - ".env"
+
+# Build configuration
+build:
+  - command: "composer install"
+    working_directory: "."
+
+# Run configuration
+run:
+  - command: "php process_photos.php"
+    working_directory: "."
+
+# Environmental variables (add your OpenRouter API key here)
+env:
+  OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
+  INPUT_FOLDER: "input_photos"
+  OUTPUT_FOLDER: "output"
+  LOG_LEVEL: "info"
