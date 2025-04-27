@@ -2,8 +2,10 @@
 
 namespace PhotoDesc\Service;
 
-use GuzzleHttp\Client;
-use Monolog\Logger;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Log\LoggerInterface;
 
 
 /**
@@ -11,22 +13,35 @@ use Monolog\Logger;
  */
 class OpenRouterService
 {
-    private Client $client;
-    private Logger $logger;
+    private ClientInterface $client;
+    private RequestFactoryInterface $requestFactory;
+    private StreamFactoryInterface $streamFactory;
+    private LoggerInterface $logger;
     private string $apiKey;
     private string $model;
 
     /**
      * Constructor
      * 
-     * @param Client $client HTTP client
-     * @param Logger $logger Logger instance
+     * @param ClientInterface $client HTTP client
+     * @param RequestFactoryInterface $requestFactory HTTP request factory
+     * @param StreamFactoryInterface $streamFactory HTTP stream factory
+     * @param LoggerInterface $logger Logger instance
      * @param string $apiKey OpenRouter API key
      * @param string $model AI model to use for image analysis
      */
-    public function __construct(Client $client, Logger $logger, string $apiKey, string $model)
+    public function __construct(
+        ClientInterface $client,
+        RequestFactoryInterface $requestFactory,
+        StreamFactoryInterface $streamFactory,
+        LoggerInterface $logger,
+        string $apiKey,
+        string $model
+    )
     {
         $this->client = $client;
+        $this->requestFactory = $requestFactory;
+        $this->streamFactory = $streamFactory;
         $this->logger = $logger;
         $this->apiKey = $apiKey;
         $this->model = $model;
@@ -42,37 +57,43 @@ class OpenRouterService
     public function classifyImage(string $base64Image, string $imageName): ?array
     {
         try {
-            $response = $this->client->post('https://openrouter.ai/api/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => "Bearer {$this->apiKey}",
-                    'Content-Type' => 'application/json',
-                    'HTTP-Referer' => 'https://localhost', // Replace with your domain
-                    'X-Title' => 'Photo Description Generator'
-                ],
-                'json' => [
-                    // Use the configured model
-                    'model' => $this->model,
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => [
-                                [
-                                    'type' => 'text',
-                                    'text' => 'Please analyze this image and provide a detailed description and relevant tags. Your response MUST be in JSON format with exactly these fields: {"description": "detailed description here", "tags": ["tag1", "tag2", "tag3"]}. Do not include any other text, only the JSON object.'
-                                ],
-                                [
-                                    'type' => 'image_url',
-                                    'image_url' => [
-                                        'url' => "data:{$this->getMimeType($imageName)};base64,{$base64Image}"
-                                    ]
+            // Create request body as JSON string
+            $requestBody = json_encode([
+                'model' => $this->model,
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => [
+                            [
+                                'type' => 'text',
+                                'text' => 'Please analyze this image and provide a detailed description and relevant tags. Your response MUST be in JSON format with exactly these fields: {"description": "detailed description here", "tags": ["tag1", "tag2", "tag3"]}. Do not include any other text, only the JSON object.'
+                            ],
+                            [
+                                'type' => 'image_url',
+                                'image_url' => [
+                                    'url' => "data:{$this->getMimeType($imageName)};base64,{$base64Image}"
                                 ]
                             ]
                         ]
-                    ],
-                    'max_tokens' => 1500,
-                    'temperature' => 0.1
-                ]
+                    ]
+                ],
+                'max_tokens' => 1500,
+                'temperature' => 0.1
             ]);
+            
+            // Create HTTP stream for the request body
+            $bodyStream = $this->streamFactory->createStream($requestBody);
+            
+            // Create the request
+            $request = $this->requestFactory->createRequest('POST', 'https://openrouter.ai/api/v1/chat/completions')
+                ->withHeader('Authorization', "Bearer {$this->apiKey}")
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('HTTP-Referer', 'https://localhost')
+                ->withHeader('X-Title', 'Photo Description Generator')
+                ->withBody($bodyStream);
+                
+            // Send the request
+            $response = $this->client->sendRequest($request);
             
             $responseBody = (string) $response->getBody();
             $result = json_decode($responseBody, true);
@@ -126,15 +147,12 @@ class OpenRouterService
             
             return $metadata;
             
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            // Handle HTTP request exceptions specifically
+        } catch (\Psr\Http\Client\ClientExceptionInterface $e) {
+            // Handle HTTP request exceptions using PSR-18 interface
             $this->logger->error('API request error: ' . $e->getMessage());
             
-            // Get response if available for more details
-            if ($e->hasResponse()) {
-                $responseBody = (string) $e->getResponse()->getBody();
-                $this->logger->error('Error response: ' . $responseBody);
-            }
+            // Cannot access response the same way with PSR interfaces
+            // as different implementations will handle this differently
             
             return null;
         } catch (\Exception $e) {

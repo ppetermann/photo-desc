@@ -2,7 +2,7 @@
 
 namespace PhotoDesc;
 
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use PhotoDesc\Service\FileSystemService;
 use PhotoDesc\Service\OpenRouterService;
 
@@ -13,19 +13,19 @@ class PhotoProcessor
 {
     private FileSystemService $fileSystemService;
     private OpenRouterService $openRouterService;
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     /**
      * Constructor
      * 
      * @param FileSystemService $fileSystemService
      * @param OpenRouterService $openRouterService
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         FileSystemService $fileSystemService,
         OpenRouterService $openRouterService,
-        Logger $logger
+        LoggerInterface $logger
     ) {
         $this->fileSystemService = $fileSystemService;
         $this->openRouterService = $openRouterService;

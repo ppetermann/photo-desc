@@ -3,12 +3,17 @@
 namespace PhotoDesc;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
 use King23\DI\DependencyContainer;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PhotoDesc\Config\AppConfig;
 use PhotoDesc\Service\FileSystemService;
 use PhotoDesc\Service\OpenRouterService;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Application container setup
@@ -54,15 +59,30 @@ class Container
             $logger = new Logger('photo-description');
             $logLevel = $config->getLogLevel() === 'debug' ? Logger::DEBUG : Logger::INFO;
             $logHandler = new StreamHandler('php://stdout', $logLevel);
-            
             $logger->pushHandler($logHandler);
             
             return $logger;
         });
+        $container->register(LoggerInterface::class, function () use ($container) {
+            return $container->get(Logger::class);
+        });
         
-        // Register HTTP client
+        // Register HTTP client and factories
         $container->register(Client::class, function () {
             return new Client();
+        });
+        $container->register(ClientInterface::class, function () use ($container) {
+            return $container->get(Client::class);
+        });
+        
+        $container->register(HttpFactory::class, function () {
+            return new HttpFactory();
+        });
+        $container->register(RequestFactoryInterface::class, function () use ($container) {
+            return $container->get(HttpFactory::class);
+        });
+        $container->register(StreamFactoryInterface::class, function () use ($container) {
+            return $container->get(HttpFactory::class);
         });
         
         // Register services
@@ -71,7 +91,7 @@ class Container
             $config = $container->get(AppConfig::class);
             
             return new FileSystemService(
-                $container->get(Logger::class),
+                $container->get(LoggerInterface::class),
                 $config->getInputFolder(),
                 $config->getOutputFolder(),
                 $config->getSupportedExtensions()
@@ -83,8 +103,10 @@ class Container
             $config = $container->get(AppConfig::class);
             
             return new OpenRouterService(
-                $container->get(Client::class),
-                $container->get(Logger::class),
+                $container->get(ClientInterface::class),
+                $container->get(RequestFactoryInterface::class),
+                $container->get(StreamFactoryInterface::class),
+                $container->get(LoggerInterface::class),
                 $config->getApiKey(),
                 $config->getAiModel()
             );
@@ -95,7 +117,7 @@ class Container
             return new PhotoProcessor(
                 $container->get(FileSystemService::class),
                 $container->get(OpenRouterService::class),
-                $container->get(Logger::class)
+                $container->get(LoggerInterface::class)
             );
         });
         
