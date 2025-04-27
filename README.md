@@ -44,9 +44,12 @@ php process_photos.php /path/to/your/image.jpg
 
 # Process an image from URL
 php process_photos.php https://example.com/image.jpg
+
+# Process with logging enabled
+php process_photos.php --log /path/to/your/image.jpg
 ```
 
-When processing a single image, the script will output the metadata directly as JSON to stdout, rather than saving it to a file.
+When processing a single image, the script will output the metadata directly as JSON to stdout, rather than saving it to a file. By default, logging is suppressed in single-image mode to ensure clean JSON output. If you want to see the logs (for debugging), add the `--log` flag.
 
 ## Configuration
 

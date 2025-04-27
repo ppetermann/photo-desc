@@ -5,6 +5,7 @@ namespace PhotoDesc;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use King23\DI\DependencyContainer;
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PhotoDesc\Config\AppConfig;
@@ -23,9 +24,10 @@ class Container
     /**
      * Create and configure the dependency injection container
      * 
+     * @param bool $quietMode If true, logging will be suppressed (useful for clean JSON output)
      * @return DependencyContainer
      */
-    public static function create(): DependencyContainer
+    public static function create(bool $quietMode = false): DependencyContainer
     {
         $container = new DependencyContainer();
         
@@ -52,14 +54,21 @@ class Container
         });
         
         // Register logger
-        $container->register(Logger::class, function () use ($container) {
+        $container->register(Logger::class, function () use ($container, $quietMode) {
             /** @var AppConfig $config */
             $config = $container->get(AppConfig::class);
             
             $logger = new Logger('photo-description');
-            $logLevel = $config->getLogLevel() === 'debug' ? Logger::DEBUG : Logger::INFO;
-            $logHandler = new StreamHandler('php://stdout', $logLevel);
-            $logger->pushHandler($logHandler);
+            
+            if ($quietMode) {
+                // In quiet mode, use NullHandler to suppress all logging output
+                $logger->pushHandler(new NullHandler());
+            } else {
+                // Normal logging to stdout
+                $logLevel = $config->getLogLevel() === 'debug' ? Logger::DEBUG : Logger::INFO;
+                $logHandler = new StreamHandler('php://stdout', $logLevel);
+                $logger->pushHandler($logHandler);
+            }
             
             return $logger;
         });
