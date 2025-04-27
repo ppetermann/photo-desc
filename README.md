@@ -19,7 +19,9 @@ This PHP application reads photos from an input folder and uses OpenRouter's AI 
 
 ## Usage
 
-Run the script to process all photos:
+### Batch Processing
+
+Run the script without arguments to process all photos in the input directory:
 
 ```
 php process_photos.php
@@ -31,6 +33,20 @@ The script will:
 3. Automatically resize images larger than 5MB to meet API limitations
 4. Send each image to OpenRouter for analysis using the configured AI model
 5. Save the resulting tags and descriptions as JSON files in the `output` directory
+
+### Single Image Processing
+
+You can also process a single image by providing its file path or URL as an argument:
+
+```
+# Process a local file
+php process_photos.php /path/to/your/image.jpg
+
+# Process an image from URL
+php process_photos.php https://example.com/image.jpg
+```
+
+When processing a single image, the script will output the metadata directly as JSON to stdout, rather than saving it to a file.
 
 ## Configuration
 
