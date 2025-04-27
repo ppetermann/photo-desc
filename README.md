@@ -61,3 +61,67 @@ Each processed image will generate a JSON file with the following structure:
 - PNG (.png)
 - GIF (.gif)
 - WebP (.webp)
+
+## Using as a Composer Package
+
+This project can also be used as a composer package in other PHP applications. The OpenRouterService class is designed to be PSR-compliant and can be easily integrated into other projects.
+
+### Installation
+
+```bash
+composer require ppetermann/photo-desc
+```
+
+### Usage in Your Project
+
+```php
+use PhotoDesc\Service\OpenRouterService;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+// Set up dependencies
+$client = new Client();
+$requestFactory = new HttpFactory();
+$streamFactory = new HttpFactory();
+$logger = new Logger('photo-description');
+$logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
+
+// Your API key and model configuration
+$apiKey = 'your-openrouter-api-key';
+$model = 'anthropic/claude-3-opus:beta'; // Or any other supported model
+
+// Create the service
+$openRouterService = new OpenRouterService(
+    $client,
+    $requestFactory,
+    $streamFactory,
+    $logger,
+    $apiKey,
+    $model
+);
+
+// Read an image and convert to base64
+$imagePath = 'path/to/your/image.jpg';
+$imageData = file_get_contents($imagePath);
+$base64Image = base64_encode($imageData);
+
+// Classify the image
+$result = $openRouterService->classifyImage($base64Image, basename($imagePath));
+
+if ($result) {
+    echo "Description: {$result['description']}\n";
+    echo "Tags: " . implode(', ', $result['tags']) . "\n";
+}
+```
+
+### Dependency Injection
+
+The service uses PSR interfaces rather than concrete implementations, making it easy to integrate with various dependency injection containers:
+
+- `Psr\Http\Client\ClientInterface` - Any PSR-18 HTTP client
+- `Psr\Http\Message\RequestFactoryInterface` - Any PSR-17 compatible request factory
+- `Psr\Http\Message\StreamFactoryInterface` - Any PSR-17 compatible stream factory
+- `Psr\Log\LoggerInterface` - Any PSR-3 logger
+
