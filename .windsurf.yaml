@@ -25,7 +25,7 @@ build:
 
 # Run configuration
 run:
-  - command: "php process_photos.php"
+  - command: "php examples/process_photos.php"
     working_directory: "."
 
 # Environmental variables (add your OpenRouter API key here)
@@ -34,3 +34,23 @@ env:
   INPUT_FOLDER: "input_photos"
   OUTPUT_FOLDER: "output"
   LOG_LEVEL: "info"
+
+# Pre-tag validation
+pre_tag_validation:
+  - name: "Run unit tests"
+    command: "./vendor/bin/phpunit"
+    working_directory: "."
+    fail_on_error: true
+    description: "All unit tests must pass before tagging a new version"
+  
+  - name: "Check for skipped tests"
+    command: "./vendor/bin/phpunit --list-tests-xml=test-results.xml && grep -q 'status=\"skipped\"' test-results.xml && echo 'ERROR: Skipped tests detected!' && exit 1 || (rm test-results.xml && exit 0)"
+    working_directory: "."
+    fail_on_error: true
+    description: "No tests should be skipped when tagging a new version"
+
+  - name: "Ensure CHANGELOG is updated"
+    command: "grep -q $(git describe --tags --abbrev=0) CHANGELOG.md || (echo 'ERROR: Latest version not found in CHANGELOG.md!' && exit 1)"
+    working_directory: "."
+    fail_on_error: true
+    description: "Ensure the CHANGELOG.md file is updated with the latest version"
