@@ -1,4 +1,4 @@
-# Photo Description Generator
+# Photo Description Generator (v0.2.1)
 
 This PHP application reads photos from an input folder and uses OpenRouter's AI models to generate tags and descriptions, saving them as JSON metadata files.
 

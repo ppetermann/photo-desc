@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-04-28
+
+### Added
+- Pre-tag validation rules in .windsurf.yaml to ensure code quality
+- Automated checks for unit tests, skipped tests, and documentation before versioning
+
+### Fixed
+- Implemented proper test for URL processing in AsyncPhotoProcessor
+- Fixed getMimeType default handling for unknown file types
+- Improved README with version information and dependencies
+
 ## [0.2.0] - 2025-04-28
 
 ### Added
