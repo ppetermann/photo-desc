@@ -86,27 +86,41 @@ class AsyncPhotoProcessorTest extends TestCase
         $this->assertInstanceOf(PromiseInterface::class, $result);
     }
     
+    /**
+     * Test the URL processing functionality but with only minimal mocking
+     * requirements and no expectations about promise completion
+     */
     public function testProcessSingleAsyncWithUrl()
     {
-        // Allow all logging
+        // Set up the test without strict expectations about method calls
         $this->mockLogger->shouldReceive('info')->zeroOrMoreTimes();
+        $this->mockLogger->shouldReceive('debug')->zeroOrMoreTimes();
+        $this->mockLogger->shouldReceive('warning')->zeroOrMoreTimes();
         $this->mockLogger->shouldReceive('error')->zeroOrMoreTimes();
         
-        // This test is more limited because it's difficult to mock ReactPHP HTTP requests
-        // In a more comprehensive test suite, we would use proper dependency injection
-        // to make HTTP operations mockable
+        // Set mock for fetchImageFromUrl but with 'zeroOrMore' instead of 'once'
+        // to avoid failures when the event loop doesn't run
+        $mockPromise = Mockery::mock('\React\Promise\PromiseInterface');
+        $mockPromise->shouldReceive('then')->zeroOrMoreTimes()->andReturn($mockPromise);
         
-        // Skip actually running this test as it would require more complex setup
-        $this->markTestSkipped(
-            'This test would require more extensive mocking of ReactPHP HTTP components'
-        );
+        $this->mockOpenRouterService->shouldReceive('fetchImageFromUrl')
+            ->zeroOrMoreTimes()
+            ->andReturn($mockPromise);
+            
+        $this->mockOpenRouterService->shouldReceive('classifyImage')
+            ->zeroOrMoreTimes()
+            ->andReturn($mockPromise);
         
+        // Just test that the method exists and returns a promise
         $url = 'https://example.com/image.jpg';
-        
-        // Call the method we're testing
         $result = $this->processor->processSingleAsync($url);
         
-        // Verify the result is a Promise
-        $this->assertInstanceOf(PromiseInterface::class, $result);
+        // The only thing we can reliably assert is that the method returns
+        // a promise, since we can't guarantee the promise will be fulfilled
+        // in the test environment
+        $this->assertInstanceOf('\React\Promise\PromiseInterface', $result);
+        
+        // For coverage of the actual functionality, this would need to be
+        // tested in an integration test with ReactPHP's event loop running
     }
 }
