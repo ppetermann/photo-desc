@@ -43,16 +43,31 @@ You can also process a single image by providing its file path or URL as an argu
 
 ```
 # Process a local file
-php process_photos.php /path/to/your/image.jpg
+php examples/process_photos.php /path/to/your/image.jpg
 
 # Process an image from URL
-php process_photos.php https://example.com/image.jpg
+php examples/process_photos.php https://example.com/image.jpg
 
 # Process with logging enabled
-php process_photos.php --log /path/to/your/image.jpg
+php examples/process_photos.php --log /path/to/your/image.jpg
+
+# Show help
+php examples/process_photos.php --help
 ```
 
 When processing a single image, the script will output the metadata directly as JSON to stdout, rather than saving it to a file. By default, logging is suppressed in single-image mode to ensure clean JSON output. If you want to see the logs (for debugging), add the `--log` flag.
+
+### Asynchronous Processing with ReactPHP
+
+This package also supports asynchronous processing using ReactPHP. This allows you to process images in a non-blocking way, which is particularly useful for web applications or when processing many images concurrently:
+
+```
+# Process a local file asynchronously
+php examples/process_photos_async.php /path/to/your/image.jpg
+
+# Process an image from URL asynchronously
+php examples/process_photos_async.php https://example.com/image.jpg
+```
 
 ## Configuration
 
@@ -84,6 +99,52 @@ Each processed image will generate a JSON file with the following structure:
 - GIF (.gif)
 - WebP (.webp)
 
+## ReactPHP Integration
+
+The package includes full ReactPHP support for asynchronous, non-blocking image processing:
+
+```php
+use React\EventLoop\Loop;
+use React\Http\Browser;
+use PhotoDesc\Service\AsyncOpenRouterService;
+use PhotoDesc\AsyncPhotoProcessor;
+use Psr\Log\LoggerInterface;
+
+// Create ReactPHP browser
+$browser = new Browser(Loop::get());
+
+// Create async services
+$asyncService = new AsyncOpenRouterService(
+    $browser,
+    $logger,  // your PSR-3 logger
+    $apiKey,  // your OpenRouter API key
+    $model    // the AI model to use
+);
+
+$asyncProcessor = new AsyncPhotoProcessor(
+    $asyncService,
+    $logger
+);
+
+// Process an image asynchronously
+$asyncProcessor->processSingleAsync('/path/to/image.jpg')
+    ->then(
+        function ($metadata) {
+            // Handle successful result
+            echo json_encode($metadata, JSON_PRETTY_PRINT);
+        },
+        function ($error) {
+            // Handle error
+            echo "Error: " . $error->getMessage();
+        }
+    );
+
+// Run the event loop
+Loop::get()->run();
+```
+
+This approach is ideal for web applications where you don't want to block while waiting for API responses.
+
 ## Using as a Composer Package
 
 This project can also be used as a composer package in other PHP applications. The OpenRouterService class is designed to be PSR-compliant and can be easily integrated into other projects.
@@ -96,9 +157,13 @@ composer require devedge/photo-desc
 
 ### Usage in Your Project
 
+#### Synchronous Usage
+
 ```php
 use PhotoDesc\Service\OpenRouterService;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use Psr\Log\LoggerInterface;
 use GuzzleHttp\Psr7\HttpFactory;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
