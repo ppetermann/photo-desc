@@ -145,7 +145,9 @@ abstract class AbstractOpenRouterService
             case 'webp':
                 return 'image/webp';
             default:
-                return 'application/octet-stream';
+                // Default to JPEG for backward compatibility
+                $this->logger->warning("Unknown image extension: {$extension}, defaulting to image/jpeg");
+                return 'image/jpeg';
         }
     }
 }
