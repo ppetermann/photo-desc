@@ -46,7 +46,7 @@ Thumbs.db
 *.backup
 
 # PHPUnit
-/phpunit.xml
+.phpunit.cache/
 
 # Build and deploy artifacts
 /build/

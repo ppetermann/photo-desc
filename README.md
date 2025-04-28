@@ -2,6 +2,9 @@
 
 This PHP application reads photos from an input folder and uses OpenRouter's AI models to generate tags and descriptions, saving them as JSON metadata files.
 
+## Disclaimer
+This project has been created vibe-coding using windsurf with the Claude 3.7 model. While it is functional, it may contain errors or bugs. Use at your own risk.
+
 ## Setup
 
 1. Install dependencies:
