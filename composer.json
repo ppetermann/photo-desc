@@ -13,11 +13,18 @@
         "vlucas/phpdotenv": "^5.5",
         "king23/di": "^2.0",
         "guzzlehttp/guzzle": "^7.5",
-        "monolog/monolog": "^2.9"
+        "monolog/monolog": "^2.9",
+        "phpunit/phpunit": "^9.0",
+        "mockery/mockery": "^1.4"
     },
     "autoload": {
         "psr-4": {
             "PhotoDesc\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhotoDesc\\Tests\\": "tests/"
         }
     }
 }

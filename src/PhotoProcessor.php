@@ -101,6 +101,28 @@ class PhotoProcessor
     }
     
     /**
+     * Check if a file exists - extracted for easier testing
+     * 
+     * @param string $path File path to check
+     * @return bool Whether the file exists
+     */
+    protected function fileExists(string $path): bool
+    {
+        return file_exists($path);
+    }
+    
+    /**
+     * Read file contents - extracted for easier testing
+     * 
+     * @param string $path File path to read
+     * @return string The file contents
+     */
+    protected function readFile(string $path): string
+    {
+        return file_get_contents($path);
+    }
+    
+    /**
      * Process an image from a local file path
      * 
      * @param string $filePath Path to the image file
@@ -110,12 +132,12 @@ class PhotoProcessor
     private function processImageFile(string $filePath): ?array
     {
         // Check if file exists
-        if (!file_exists($filePath)) {
+        if (!$this->fileExists($filePath)) {
             throw new \Exception("File not found: {$filePath}");
         }
         
         // Read image file to base64
-        $imageData = file_get_contents($filePath);
+        $imageData = $this->readFile($filePath);
         $base64Image = base64_encode($imageData);
         
         // Call OpenRouter API to analyze the image

@@ -2,7 +2,7 @@
 
 namespace PhotoDesc\Service;
 
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 
 /**
@@ -13,18 +13,18 @@ class FileSystemService
     private string $inputFolder;
     private string $outputFolder;
     private array $supportedExtensions;
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     /**
      * Constructor
      * 
-     * @param Logger $logger Logger instance
+     * @param LoggerInterface $logger Logger instance
      * @param string $inputFolder Directory where photos are stored
      * @param string $outputFolder Directory where JSON metadata will be saved
      * @param array $supportedExtensions List of supported image extensions
      */
     public function __construct(
-        Logger $logger,
+        LoggerInterface $logger,
         string $inputFolder,
         string $outputFolder,
         array $supportedExtensions
