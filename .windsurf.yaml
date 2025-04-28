@@ -54,3 +54,9 @@ pre_tag_validation:
     working_directory: "."
     fail_on_error: true
     description: "Ensure the CHANGELOG.md file is updated with the latest version"
+
+  - name: "Ensure README up-to-date with latest version"
+    command: "grep -q $(git describe --tags --abbrev=0) README.md || (echo 'README WARNING: Please update README.md with latest version and features!' && exit 1)"
+    working_directory: "."
+    fail_on_error: true
+    description: "Prompts to update README with latest version - actual content review is manual"
