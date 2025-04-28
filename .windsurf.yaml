@@ -13,6 +13,11 @@ ignore:
   - "output"
   - ".env"
 
+# Important protection rules
+rules:
+  - never_modify:
+      - ".env"      # Never modify existing .env files
+
 # Build configuration
 build:
   - command: "composer install"
